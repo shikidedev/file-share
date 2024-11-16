@@ -1,4 +1,5 @@
 <script>
+    import { supabase } from '$lib/supabaseClient';
     import Icon from '@iconify/svelte';
     let fileInput;
     let file;
@@ -46,25 +47,44 @@
         formData.append("file", file);  // Append the file (not base64)
         formData.append("fileName", fileName);  // Append the file name as a separate field
         formData.append("expiration", expirationTime);
+        const filePath = `uploads/${fileName}`;
         try {
+            
+
+            const { data, error } = await supabase
+                .storage
+                .from('uploads')
+                .upload(filePath, file, { upsert: true })
+    
+            if (error) {
+                console.log(error);
+            }
+
+            const { data: signedUrl , error: signedUrlError } = await supabase
+            .storage
+            .from('uploads')
+            .createSignedUrl(filePath, expirationTime * 60, {download: true} )
+    
+            // const json = await resp.json();
+    
+            // if (json.error) {
+            //     throw new Error(json.error);
+            // }
+    
+            if (data) {
+                console.log(data)
+            }
+            downloadUrl = signedUrl.signedUrl;
+            console.log(downloadUrl);
+
             const resp = await fetch("/upload", {
                 method: "POST",
                 body: formData,
             });
-    
-            if (!resp.ok) {
-                throw new Error("Unable to upload File");
+
+            if (!resp) {
+                throw new Error(`Metadata insertion failed`);
             }
-    
-            const json = await resp.json();
-    
-            if (json.error) {
-                throw new Error(json.error);
-            }
-    
-            console.log("File uploaded successfully", json);
-            downloadUrl = json.url.signedUrl;
-            console.log(downloadUrl);
         } catch (error) {
             console.log(error);
         }
