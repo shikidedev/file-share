@@ -1,6 +1,8 @@
 <script>
     import { supabase } from '$lib/supabaseClient';
     import Icon from '@iconify/svelte';
+    import { v4 as uuidv4 } from 'uuid';
+
     let fileInput;
     let file;
     let fileName;
@@ -47,7 +49,10 @@
         formData.append("file", file);  // Append the file (not base64)
         formData.append("fileName", fileName);  // Append the file name as a separate field
         formData.append("expiration", expirationTime);
-        const filePath = `uploads/${fileName}`;
+        const uniqueFileName = `${uuidv4()}-${fileName}`;
+
+        const filePath = `uploads/${uniqueFileName}`;
+        formData.append("filePath", filePath);
         try {
             
 

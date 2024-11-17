@@ -1,14 +1,15 @@
 import { supabase } from '$lib/supabaseServer';
 import { json } from '@sveltejs/kit';
-// import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 
 export async function POST({ request }) {
     console.log('test');
     try {
        const formData = await request.formData();
        const file = formData.get('file');
-       const fileName = formData.get('fileName');
+    //    const fileName = formData.get('fileName');
        const expirationMinutes = parseInt(formData.get('expiration'), 10);
+       const filePath = formData.get('filePath');
 
 
         if (!file) {
@@ -18,7 +19,7 @@ export async function POST({ request }) {
         const expirationTimeInSeconds = expirationMinutes * 60;
 
         // const uniqueFileName = `${uuidv4()}-${fileName}`;
-        const filePath = `uploads/${fileName}`;
+        // const filePath = `uploads/${fileName}`;
         //upload
         // const { data, error } = await supabase
         //     .storage
