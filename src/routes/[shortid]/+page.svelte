@@ -94,13 +94,13 @@
             Incorrect password please try again!
         </div>
     {/if}
-
+    {#if data.data.title || data.data.description}
     <div class="details">
-        {#if data.data.title || data.data.description}
+        
             <div class="detail-title">
                 File Detail
             </div>
-        {/if}
+        
         {#if data.data.title}
         <p>Title: <span class="title">{data.data.title}</span></p>
         {/if}
@@ -115,6 +115,7 @@
         
         {/if}
     </div>
+    {/if}
    
     
     {#if noPassword || verify === "true"}
