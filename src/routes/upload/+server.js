@@ -1,48 +1,41 @@
 import { supabase } from '$lib/supabaseServer';
 import { json } from '@sveltejs/kit';
-import { v4 as uuidv4 } from 'uuid';
+import pkg from 'bcrypt';
+
+const { hash } = pkg;
 
 export async function POST({ request }) {
-    console.log('test');
     try {
        const formData = await request.formData();
        const file = formData.get('file');
-    //    const fileName = formData.get('fileName');
        const expirationMinutes = parseInt(formData.get('expiration'), 10);
        const filePath = formData.get('filePath');
+       const password = formData.get('password');
+       const shortid = formData.get('shortid');
 
+    //    if () {
+    //     console.log("No password entered or password is empty");
+    //     return json({ error: 'No password provided' }, { status: 400 });
+    //     }
+
+        
+
+        console.log(formData.get('password'))
+
+        let hashedPassword = null;
+       
+    //    const hashedPassword = password ? await  : null;
+        if (!password || password.trim() === '') {
+            hashedPassword = "null";
+        } else {
+            hashedPassword = await hash(password, 10)
+        }
 
         if (!file) {
             return json({ error: 'No file uploaded' }, { status: 400 });
         }
 
         const expirationTimeInSeconds = expirationMinutes * 60;
-
-        // const uniqueFileName = `${uuidv4()}-${fileName}`;
-        // const filePath = `uploads/${fileName}`;
-        //upload
-        // const { data, error } = await supabase
-        //     .storage
-        //     .from('uploads')
-        //     .upload(filePath, file, { upsert: true })
-        
-        // console.log(data);
-        
-        // if (error) {
-        //     console.log(error);
-        // }
-        //get link
-        
-        // const { data: signedUrl , error: signedUrlError } = await supabase
-        //     .storage
-        //     .from('uploads')
-        //     .createSignedUrl(filePath, expirationTimeInSeconds, {download: true} )
-            
-        // console.log(signedUrl);
-
-        // if (signedUrlError) {
-        //     return json({ error: signedUrlError.message }, { status: 500 });
-        // }
 
         const { data: metadata, error: metadataError } = await supabase
             .from('file_metadata')
@@ -51,6 +44,8 @@ export async function POST({ request }) {
                     file_path: filePath,
                     upload_time: new Date(),
                     expiration_time: new Date(Date.now() + expirationTimeInSeconds * 1000),
+                    password: hashedPassword,
+                    shortid: shortid,
                 }
             ]);
         

@@ -2,14 +2,16 @@
     import { supabase } from '$lib/supabaseClient';
     import Icon from '@iconify/svelte';
     import { v4 as uuidv4 } from 'uuid';
+    import { customAlphabet } from 'nanoid';
 
     let fileInput;
     let file;
     let fileName;
-    let msg = "No file or invalid file";
+    let password = "";
     let downloadUrl = '';
     let expirationTime = 1;
-    
+    let errorMsg = '';
+ 
     
     function convertBlobToBase64(blob) {
         return new Promise((resolve, reject) => {
@@ -42,17 +44,31 @@
     async function downloadLink() {
         if (!file) {
             console.log("No file uploaded");
+            errorMsg = "No file entered"
             return;
         }
-    
+
+        console.log('test1');
+        console.log(password)
+
+        errorMsg = '';
+        
+
+        const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        const nanoid = customAlphabet(alphabet, 8);
+        const shortId = nanoid();
+
         const formData = new FormData();
         formData.append("file", file);  // Append the file (not base64)
         formData.append("fileName", fileName);  // Append the file name as a separate field
         formData.append("expiration", expirationTime);
+        formData.append('password', password);
+        formData.append('shortid',shortId);
         const uniqueFileName = `${uuidv4()}-${fileName}`;
 
         const filePath = `uploads/${uniqueFileName}`;
         formData.append("filePath", filePath);
+
         try {
             
 
@@ -64,28 +80,22 @@
             if (error) {
                 console.log(error);
             }
-
-            const { data: signedUrl , error: signedUrlError } = await supabase
-            .storage
-            .from('uploads')
-            .createSignedUrl(filePath, expirationTime * 60, {download: true} )
-    
-            // const json = await resp.json();
-    
-            // if (json.error) {
-            //     throw new Error(json.error);
-            // }
     
             if (data) {
-                console.log(data)
+                console.log(data);
             }
-            downloadUrl = signedUrl.signedUrl;
+            const baseUrl = window.location.href;
+
+            downloadUrl = `${baseUrl}${shortId}`;
+            
             console.log(downloadUrl);
 
             const resp = await fetch("/upload", {
                 method: "POST",
                 body: formData,
             });
+
+            console.log(resp)
 
             if (!resp) {
                 throw new Error(`Metadata insertion failed`);
@@ -114,6 +124,9 @@
     </script>
     
     <div class="form">
+        {#if errorMsg}
+        {errorMsg}
+        {/if}
         <div class="title">
             <h1>Upload Form</h1>
         </div>
@@ -141,6 +154,12 @@
                 on:change={handleFileUpload} />
         </div>
 
+        <div class="password-field">
+            <label for="Password">Password</label>
+            <input type="password"
+                bind:value={password}>
+        </div>
+
         <div class="expiration-container">
             <div class="exp-label">
                 <Icon icon="il:clock"/>
@@ -157,6 +176,9 @@
                     <option value="5">5 minutes</option>
                 </select>
             </div>
+            
+            
+            
             
         </div>
 
@@ -175,16 +197,25 @@
     <style lang="scss">
     .form {
         font-family: 'Poppins';
-        display: column;
-        align-items: center;
+        display: flex; /* Changed from `column` */
+        flex-direction: column; /* Added to stack elements vertically */
+        align-items: center; 
         justify-content: center;
         border: 2px solid #e0e0e0;
         border-radius: 10px;
-        padding: 0.5rem;
+        padding: 1.5rem; /* Increased padding for better spacing */
+        max-width: 500px; /* Set a max width */
+        margin: auto; /* Center the form horizontally */
     }
     .title{
         display: flex;
         justify-content: center;
+        margin-bottom: 1rem;
+
+        h1 {
+            font-size: 1.8rem;
+            color: #344856;
+        }
     }
     
     .url {
@@ -208,8 +239,9 @@
     .upload-container {
         display: flex;
         justify-content: center;
+        margin-bottom: 1rem;
         .upload {
-            padding: 0.5rem;
+            padding: 1rem;
             cursor: default;
             display: flex;
             flex-direction: column;
@@ -229,10 +261,28 @@
         }
     }
 
-    .expiration-container {
+    .password-field {
+        border: 1px solid #e0e0e0;
+        border-radius: 5px;
+        margin-top: 0.5rem;
         display: flex;
+        flex-direction: row;
+        align-items: flex-start;
         gap: 0.5rem;
         justify-content: center;
+        padding: 0.5rem;
+    }
+
+    .expiration-container {
+        border: 1px solid #e0e0e0;
+        border-radius: 5px;
+        margin-top: 0.5rem;
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 0.5rem;
+        justify-content: center;
+        padding: 0.5rem;
 
         .exp-label {
             display: flex;
