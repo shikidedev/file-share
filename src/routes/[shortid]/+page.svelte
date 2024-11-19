@@ -15,6 +15,7 @@
     let enteredPassword = "";
     let noPassword = data.data.password === "null";
     let verify = "false";
+    let isCorrect = '';
     // let errorMessage = "";
     // let showDownloadButton = false;
 
@@ -58,69 +59,53 @@
             // Update `verify` reactively
             if (responseBody.message === 'Correct password') {
                 verify = "true";
+                isCorrect = "true";
             } else {
                 verify = "false";
+                isCorrect = "false";
             }
         } else {
             const errorResponse = await resp.json();
             console.error('Verification failed:', errorResponse.error);
             verify = "false";
+            isCorrect = "false";
         }
             
         } catch (error) {
             console.error("Verification error:", error);
         }
     }
-
-    
-    // async function verifyPassword() {
-    //     if (!hashedPassword) return;
-    //     try {
-    //         const response = await fetch('/api/verify-password', {
-    //             method: 'POST',
-    //             headers: { 'Content-Type': 'application/json' },
-    //             body: JSON.stringify({ enteredPassword, hashedPassword }),
-    //         });
-
-    //         const result = await response.json();
-
-    //         if (result.success) {
-    //             showDownloadButton = true; // Show download button on success
-    //             errorMessage = "";
-    //         } else {
-    //             errorMessage = result.error || 'Incorrect password';
-    //         }
-    //     } catch (err) {
-    //         console.error('Error verifying password:', err);
-    //         errorMessage = 'An error occurred.';
-    //     }
-    // }
-
-    // function downloadFile() {
-    //     window.location.href = fileUrl;
-    // }
 </script>
 
 <div class="url-download">
+    {#if isCorrect === 'true'}
+        <div class="correct">
+            Correct Password!
+        </div>
+    {:else if isCorrect === 'false'}
+        <div class="incorrect">
+            Incorrect password please try again!
+        </div>
+    {/if}
     
     {#if noPassword}
-        <p>Download Link</p>
+        <p>Download File</p>
         <button on:click={getDownloadLink}>
             Download
         </button>
     {:else}
         <div class="password-field">
-            <p>Enter password to download link</p>
+            <p>Enter password to download file</p>
             <label for="password">Password:</label>
             <input type="password" bind:value={enteredPassword}>
-            {#if verify === "true" }
+        </div>
+        {#if verify === "true" }
             <button on:click={getDownloadLink}>
                 Download
             </button>
             {:else}
             <button on:click={verifyPassword}>Enter</button>
-            {/if}
-        </div>
+        {/if}
         
     {/if}
    
@@ -132,6 +117,15 @@
 <style>
     div {
         font-family: 'Poppins';
+    }
+
+    .incorrect{
+        display: flex;
+        background-color: #e9686a;
+        color: #f4f6f6;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        border: 0px;
     }
 
     .url-download{
@@ -147,6 +141,7 @@
     }
 
     button {
+        margin: 0.5rem;
         font-family: 'Poppins';
         border: 0px;
         background-color: #538DFC;

@@ -20,6 +20,9 @@ importers:
       sass:
         specifier: ^1.81.0
         version: 1.81.0
+      svelte-switcher:
+        specifier: ^1.0.2
+        version: 1.0.2
       uuid:
         specifier: ^11.0.3
         version: 11.0.3
@@ -837,6 +840,9 @@ packages:
       svelte: ^4.0.0 || ^5.0.0-next.0
       typescript: '>=5.0.0'
 
+  svelte-switcher@1.0.2:
+    resolution: {integrity: sha512-XAcK1nwFT4cqbCVFca/QXLHzj16AUd6KNfi2oEBoyC+4SoGi+YkPFVoNCdtZu4GDZ2v6NU/NPDAcFW1h1KfQwA==}
+
   svelte@5.2.2:
     resolution: {integrity: sha512-eHIJRcvA6iuXdRGMESTmBtWTQCcCiol4gyH9DA60ybS35W1x27cvtbndNvWDqX72blyf+AYeQ4gzZ0XGg3L8sw==}
     engines: {node: '>=18'}
@@ -1642,6 +1648,8 @@ snapshots:
       typescript: 5.6.3
     transitivePeerDependencies:
       - picomatch
+
+  svelte-switcher@1.0.2: {}
 
   svelte@5.2.2:
     dependencies:

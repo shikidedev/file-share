@@ -23,21 +23,4 @@ export async function POST({ request }) {
         } catch (error) {
             return json({ error: error.message }, { status: 500 });
         }
-//     const { enteredPassword, hashedPassword } = await request.json();
-
-//     try {
-//         // Compare entered password with hashed password
-//         const isMatch = await bcrypt.compare(enteredPassword, hashedPassword);
-
-//         if (isMatch) {
-//             return new Response(JSON.stringify({ success: true }), { status: 200 });
-//         } else {
-//             return new Response(JSON.stringify({ success: false, error: 'Incorrect password' }), { status: 401 });
-//         }
-//     } catch (error) {
-//         return new Response(
-//             JSON.stringify({ success: false, error: 'An error occurred during password verification.' }),
-//             { status: 500 }
-//         );
-//     }
 }
