@@ -12,6 +12,8 @@ export async function POST({ request }) {
        const filePath = formData.get('filePath');
        const password = formData.get('password');
        const shortid = formData.get('shortid');
+       const title = formData.get('title');
+       const description = formData.get('description');
 
     //    if () {
     //     console.log("No password entered or password is empty");
@@ -37,6 +39,7 @@ export async function POST({ request }) {
 
         const expirationTimeInSeconds = expirationMinutes * 60;
 
+
         const { data: metadata, error: metadataError } = await supabase
             .from('file_metadata')
             .insert([
@@ -46,6 +49,8 @@ export async function POST({ request }) {
                     expiration_time: new Date(Date.now() + expirationTimeInSeconds * 1000),
                     password: hashedPassword,
                     shortid: shortid,
+                    title: title,
+                    description: description,
                 }
             ]);
         

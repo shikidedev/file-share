@@ -13,6 +13,8 @@
     let expirationTime = 7200; 
     let errorMsg = '';
     let uploadStatus = '';
+    let title = '';
+    let description = '';
  
     const expirationOptions = [
     { value: 60, label: "1 hour" },
@@ -76,6 +78,8 @@
         formData.append("expiration", expirationTime);
         formData.append('password', password);
         formData.append('shortid',shortId);
+        formData.append('title', title);
+        formData.append('description', description);
         const uniqueFileName = `${uuidv4()}-${fileName}`;
 
         const filePath = `uploads/${uniqueFileName}`;
@@ -201,11 +205,24 @@
                 on:change={handleFileUpload} />
         </div>
 
+        <div class="details">
+            <p>Details (Optional)</p>
+            <div class="title-field">
+                <label for="title-field">Title:</label>
+                <input type="text" id="title" bind:value={title}>
+            </div>
+    
+            <div class="description-field">
+                <label for="description-field">Description:</label>
+                <textarea name="description" bind:value={description} id="description"></textarea>
+            </div>
+        </div>
+
         <div class="toggle-password">
             
             <label for="showPassword">
-                <input type="checkbox" id="showPassword" bind:checked={showPassword}>
                 Enable password protection for your file<link rel="stylesheet" href="">
+                <input type="checkbox" id="showPassword" bind:checked={showPassword}>
             </label>
         </div>
 
@@ -278,6 +295,50 @@
         margin: auto; /* Center the form horizontally */
     }
 
+        .details {
+        display: flex;
+        border: 1px solid #e0e0e0;
+        flex-direction: column;
+        padding: 1rem; /* Slightly increased padding for better spacing */
+        gap: 1rem; /* Increased gap between form elements */
+        justify-content: flex-start;
+    }
+
+    /* Styling for individual fields like title and description */
+    .title-field, .description-field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem; /* Adds space between label and input */
+    }
+
+    /* Label styling */
+    .toggle-password label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    /* Input field styling */
+    input[type="text"] {
+        padding: 0.75rem;
+        font-size: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        outline: none;
+        transition: border-color 0.3s ease;
+    }
+
+    /* Focus effect for input fields */
+    input[type="text"]:focus {
+        border-color: #007bff;
+    }
+
+    .details {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+
     .error-issue {
         font-family: 'Poppins';
         border: 0px;
@@ -324,6 +385,8 @@
             color: #344856;
         }
     }
+
+
     
     .url {
         display: flex;
@@ -368,6 +431,8 @@
             }
         }
     }
+
+
 
     .reset {
         background-color: white;
@@ -437,5 +502,7 @@
 
         }
     }
+
+    
     </style>
     
