@@ -30,6 +30,11 @@
         console.log(signedUrl.signedUrl);
 
         window.location.href = signedUrl.signedUrl;
+
+        // Refresh the page after download
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
     }
 
     function test() {
@@ -88,7 +93,7 @@
         </div>
     {/if}
     
-    {#if noPassword}
+    {#if noPassword || verify === "true"}
         <p>Download File</p>
         <button on:click={getDownloadLink}>
             Download
@@ -99,14 +104,7 @@
             <label for="password">Password:</label>
             <input type="password" bind:value={enteredPassword}>
         </div>
-        {#if verify === "true" }
-            <button on:click={getDownloadLink}>
-                Download
-            </button>
-            {:else}
-            <button on:click={verifyPassword}>Enter</button>
-        {/if}
-        
+        <button on:click={verifyPassword}>Enter</button>
     {/if}
    
 
