@@ -17,7 +17,6 @@
     let description = '';
  
     const expirationOptions = [
-    { value: 1, label: "1 minute"},
     { value: 60, label: "1 hour" },
     { value: 720, label: "12 hours" },
     { value: 1440, label: "1 day" },
