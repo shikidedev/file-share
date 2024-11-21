@@ -6,8 +6,8 @@
     
     let showPassword = false;
     let fileInput;
-    let file;
-    let fileName;
+    let files = [];
+    let fileNames = [];
     let password = "";
     let downloadUrl = '';
     let expirationTime = 7200; 
@@ -17,6 +17,7 @@
     let description = '';
  
     const expirationOptions = [
+    { value: 1, label: "1 minute"},
     { value: 60, label: "1 hour" },
     { value: 720, label: "12 hours" },
     { value: 1440, label: "1 day" },
@@ -37,26 +38,26 @@
     }
     
     async function handleFileUpload(event) {
-        const uploadedFile = event.target.files[0];
-        if (uploadedFile) {
-            file = uploadedFile;
-            fileName = uploadedFile.name;
-        }
+        const uploadedFiles = Array.from(event.target.files); // Convert FileList to Array
+         if (uploadedFiles.length > 0) {
+        files = [...files, ...uploadedFiles]; // Add new files to the existing array
+        fileNames = files.map(file => file.name); // Update file names array
+    }
     }
     
     function handleDrop(e) {
         e.preventDefault();
-        const uploadedFile = e.dataTransfer.files[0];
-        if (uploadedFile) {
-            file = uploadedFile;
-            fileName = uploadedFile.name;
-        }
+        const uploadedFiles = Array.from(e.dataTransfer.files); // Convert FileList to Array
+        if (uploadedFiles.length > 0) {
+        files = [...files, ...uploadedFiles]; // Add new files to the existing array
+        fileNames = files.map(file => file.name); // Update file names array
+    }
     }
     
     async function downloadLink() {
-        if (!file) {
+        if (files.length === 0) {
             console.log("No file uploaded");
-            errorMsg = "No file entered"
+            errorMsg = "No files entered"
             return;
         }
 
@@ -73,55 +74,63 @@
         const shortId = nanoid();
 
         const formData = new FormData();
-        formData.append("file", file);  // Append the file (not base64)
-        formData.append("fileName", fileName);  // Append the file name as a separate field
+        // formData.append("file", file);  // Append the file (not base64)
+        // formData.append("fileName", fileName);  // Append the file name as a separate field
         formData.append("expiration", expirationTime);
         formData.append('password', password);
         formData.append('shortid',shortId);
         formData.append('title', title);
         formData.append('description', description);
-        const uniqueFileName = `${uuidv4()}-${fileName}`;
+        // const uniqueFileName = `${uuidv4()}-${fileName}`;
 
-        const filePath = `uploads/${uniqueFileName}`;
-        formData.append("filePath", filePath);
+        // const filePath = `uploads/${uniqueFileName}`;
+        // formData.append("filePath", filePath);
 
         try {
-            
 
-            const { data, error } = await supabase
+            const resp = await fetch("/upload", {
+                    method: "POST",
+                    body: formData,
+            });
+            for (const file of files) {
+                const uniqueFileName = `${uuidv4()}-${file.name}`;
+                const filePath = `uploads/${uniqueFileName}`;
+
+                const formData_location = new FormData();
+                formData_location.append('file_path', filePath);
+                formData_location.append('shortid',shortId);
+                formData_location.append('fileName', file.name);
+                
+
+                const { data, error } = await supabase
                 .storage
                 .from('uploads')
                 .upload(filePath, file, { upsert: true })
     
-            if (error) {
-                console.log(error);
-                uploadStatus='File upload failed'
-                return;
+                if (error) {
+                    console.log(error);
+                    uploadStatus='File upload failed'
+                    return;
+                }
+
+                const resp = await fetch("/upload", {
+                    method: "POST",
+                    body: formData_location,
+                });
             }
 
-            uploadStatus= 'File Uploaded!'
-    
-            if (data) {
-                console.log(data);
-            }
             const baseUrl = window.location.href;
 
             downloadUrl = `${baseUrl}${shortId}`;
+
+            uploadStatus = 'File uploaded!';
+
+
             
             console.log(downloadUrl);
-
-            const resp = await fetch("/upload", {
-                method: "POST",
-                body: formData,
-            });
-
-            console.log(resp)
-
-            if (!resp) {
-                throw new Error(`Metadata insertion failed`);
-            }
         } catch (error) {
             console.log(error);
+            uploadStatus = 'File upload failed'
         }
     }
 
@@ -147,15 +156,16 @@
     }
 
     function resetForm() {
-        file = null;
-        fileName = '';
-        password = '';
-        downloadUrl = '';
-        errorMsg = '';
-        showPassword = false;
-        expirationTime = 7200;
-        uploadStatus = '';
+         setTimeout(() => {
+            location.reload();
+        }, 1000);
     }
+
+    function removeFile(index) {
+    files = files.filter((_, i) => i !== index); // Create a new array excluding the file at the given index
+    fileNames = files.map(file => file.name); // Update the file names array
+    }
+
     </script>
     
     <div class="form">
@@ -186,10 +196,7 @@
                 class="upload"
                 on:drop={handleDrop}
                 on:dragover={(e) => e.preventDefault()}>
-                {#if fileName}
-                    <div class="file-name">Uploaded File: {fileName}</div>
-                {/if}
-                <span> Choose a file or drag it here</span>
+                <span> Choose files or drag them here</span>
                 <button
                     on:click={(e) => {
                         fileInput.click();
@@ -197,6 +204,7 @@
             </div>
     
             <input
+                multiple
                 type="file"
                 bind:this={fileInput}
                 id="file"
@@ -204,6 +212,25 @@
                 required
                 on:change={handleFileUpload} />
         </div>
+
+        {#if files.length > 0}
+                <div class="file-list">
+                    <h4>Uploaded Files:</h4>
+                    
+                        {#each files as file, index}
+                            <div class="file-field">
+                                <div class="file-display">
+                                    {file.name}
+                                </div>
+                                <button class="remove" on:click={() => removeFile(index)}>
+                                    Remove
+                                </button>
+                            </div>
+                            
+                        {/each}
+                    
+                </div>
+        {/if}
 
         <div class="details">
             <p>Details (Optional)</p>
@@ -272,7 +299,7 @@
             </button>
         </div>
 
-        {#if uploadStatus==='File Uploaded!'}
+        {#if uploadStatus==='File uploaded!'}
             <div class="reset" on:click={resetForm}>
                     Convert Next File
             </div>
@@ -295,6 +322,26 @@
         margin: auto; /* Center the form horizontally */
     }
 
+        .file-list {
+            padding: 0.5rem;
+            gap: 0.5rem;
+            display: flex;
+            flex-direction: column;
+
+            .file-field {
+                display: flex;
+                justify-content: space-between;
+                gap: 0.5rem;
+            }
+            .file-display {
+            display: inline;
+            justify-content: space-between;
+            padding: 0.5rem;
+            gap: 0.5rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+        }
+        }
         .details {
         display: flex;
         border: 1px solid #e0e0e0;
@@ -302,6 +349,7 @@
         padding: 1rem; /* Slightly increased padding for better spacing */
         gap: 1rem; /* Increased gap between form elements */
         justify-content: flex-start;
+        border-radius: 5px;
     }
 
     /* Styling for individual fields like title and description */

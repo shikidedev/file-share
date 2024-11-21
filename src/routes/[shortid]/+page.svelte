@@ -1,42 +1,52 @@
 <script>
     import { supabase } from '$lib/supabaseClient';
     export let data;
-    // export let hasPassword;
-    // export let hashedPassword;
+    export let dataLocation;
 
-    console.log(data)
-    console.log(data.data.file_path)
+   
+    console.log(data.data)
+    // console.log(data.dataLocation) dataLocation
+    // console.log(data.data.file_path)
     // console.log(hasPassword)
     // console.log(hashedPassword)
-    const filePath = data.data.file_path
+    // const filePath = dataLocation.file_path
     const uploadTime = new Date(data.data.upload_time);
     const expirationTime = new Date(data.data.expiration_time)
     const duration = Math.floor((expirationTime - uploadTime) / 1000);
     let enteredPassword = "";
-    let noPassword = data.data.password === "null";
+    // let noPassword = data.data.password === "null";
     let verify = "false";
     let isCorrect = '';
     // let errorMessage = "";
     // let showDownloadButton = false;
-
-    console.log(duration);
-
     console.log(data.data.password);
-    console.log(verify)
+    
 
-    async function getDownloadLink() {
-        const { data: signedUrl } = await supabase.storage
-        .from('uploads')
-        .createSignedUrl(filePath,duration,{download: true, });
+    // console.log(duration);
+    // console.log(data.id)
+    // console.log(data.password);
+    // console.log(verify)
 
-        console.log(signedUrl.signedUrl);
+    async function getDownloadLink(filePath) {
+        
+            const { data: signedUrl } = await supabase.storage
+                .from('uploads')
+                .createSignedUrl(filePath,duration,{download: true, });
 
-        window.location.href = signedUrl.signedUrl;
+            window.location.href = signedUrl.signedUrl;
+        
+        // const { data: signedUrl } = await supabase.storage
+        // .from('uploads')
+        // .createSignedUrl(filePath,duration,{download: true, });
 
-        // Refresh the page after download
-        setTimeout(() => {
-            location.reload();
-        }, 1000);
+        // console.log(signedUrl.signedUrl);
+
+        // window.location.href = signedUrl.signedUrl;
+
+        // // Refresh the page after download
+        // setTimeout(() => {
+        //     location.reload();
+        // }, 1000);
     }
 
     function test() {
@@ -98,7 +108,7 @@
     <div class="details">
         
             <div class="detail-title">
-                File Detail
+                Detail
             </div>
         
         {#if data.data.title}
@@ -118,18 +128,38 @@
     {/if}
    
     
-    {#if noPassword || verify === "true"}
+    {#if data.data.password === null || verify === "true"}
 
-        <div class="download-field">
+        <!-- <div class="download-field">
             <p>Download File</p>
             <button on:click={getDownloadLink}>
                 Download
             </button>
-        </div>
+        </div> -->
+
+        {#if data.dataLocation.length > 0}
+    <div class="file-list">
+        <h2>Download Files</h2>
+        <ul>
+            {#each data.dataLocation as location}
+                <li class="file-field">
+                    <span class="file-display">{location.fileName}</span>
+                    <button on:click={() => getDownloadLink(location.file_path)}>
+                        Download
+                    </button>
+                </li>
+            {/each}
+        </ul>
+    </div>
+{:else}
+    <p>Loading data...</p>
+{/if}
+
+
        
     {:else}
         <div class="password-field">
-            <p  style="font-weight: 500">Enter password to download file</p>
+            <p  style="font-weight: 500">Enter password to download</p>
             <label for="password">Password:</label>
             <input type="password" bind:value={enteredPassword}>
         </div>
@@ -141,7 +171,26 @@
 </div>
 
 
-<style>
+<!-- {#if data.dataLocation.length > 0}
+    <div>
+        <h2>Download Files</h2>
+        <ul>
+            {#each data.dataLocation as location}
+                <li>
+                    <span>{location.file_path}</span>
+                    <button on:click={() => getDownloadLink(location.file_path)}>
+                        Download
+                    </button>
+                </li>
+            {/each}
+        </ul>
+    </div>
+{:else}
+    <p>Loading data...</p>
+{/if} -->
+
+
+<style lang="scss">
     div {
         font-family: 'Poppins';
     }
@@ -172,6 +221,28 @@
         border: 0px;
     }
 
+    .file-list {
+            padding: 0.5rem;
+            gap: 0.5rem;
+            display: flex;
+            flex-direction: column;
+
+            .file-field {
+                display: flex;
+                justify-content: space-between;
+                gap: 0.5rem;
+                padding: 0.5rem;
+            }
+            .file-display {
+            display: inline;
+            justify-content: space-between;
+            padding: 0.5rem;
+            gap: 0.5rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+        }
+        }
+
     .url-download{
         display: flex; /* Changed from `column` */
         flex-direction: column; /* Added to stack elements vertically */
@@ -184,10 +255,6 @@
         margin: auto; /* Center the form horizontally */
     }
 
-    .download-field{
-        
-        margin: auto;
-    }
 
     button {
         margin: 0.5rem;
